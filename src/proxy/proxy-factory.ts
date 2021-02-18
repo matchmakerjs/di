@@ -1,9 +1,11 @@
-import { ConstructorFunction } from '../container/di-container';
+import { ConstructorFunction, DIContainer } from '../container/di-container';
 import { Provider } from '../provider/provider';
 
-export interface ProxyFactory {
-  createProxy<T>(constructor: ConstructorFunction<T>, provider: Provider<T>): T;
-}
+// export interface ProxyFactory {
+//   createProxy<T>(constructor: ConstructorFunction<T>, provider: Provider<T>): T;
+// }
+
+export type ProxyFactory<T> = (constructor: ConstructorFunction<T>, provider: Provider<T>, container: DIContainer)=> T;
 
 export function createProxy<T>(constructor: ConstructorFunction<T>, provider: Provider<T>): T {
 

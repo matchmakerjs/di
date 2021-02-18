@@ -2,19 +2,21 @@ import "reflect-metadata";
 import { ConstructorFunction, DIContainer } from './di-container';
 import { Provider, ProviderFactory } from '../provider/provider';
 import { createProxy, ProxyFactory } from '../proxy/proxy-factory';
-import { Inject } from '../decorator/inject';
+import { CONTAINER, Inject } from '../decorator/inject';
 
 type InstanceFactory = ProviderFactory<any> | ConstructorFunction<any>;
 
-export class SimpleDIContainer implements DIContainer {
+export class LazyDIContainer implements DIContainer {
   private registry: Map<any, any> = new Map();
   private providers: Map<any, Provider<any>>;
-  private proxyFactory: ProxyFactory = {
-    createProxy
-  };
+  private proxyFactory?: ProxyFactory<any>;
 
-  constructor(providers: InstanceFactory[], private parent?: DIContainer) {
-    this.providers = this.toProviderMap(providers);
+  constructor(conf: {
+    providers: InstanceFactory[],
+    proxyFactory?: ProxyFactory<any>
+  }, private parent?: DIContainer) {
+    this.proxyFactory = conf.proxyFactory || createProxy;
+    this.providers = this.toProviderMap(conf.providers);
   }
 
   private toProviderMap(providers: InstanceFactory[]) {
@@ -28,7 +30,7 @@ export class SimpleDIContainer implements DIContainer {
           throw new Error(`Decorate class ${providerFactory.name} with @Injectable()`);
         }
         providersMap.set(providerFactory, () =>
-          this.proxyFactory.createProxy(providerFactory, () => this.createInstance(providerFactory)),
+          this.proxyFactory(providerFactory, () => this.createInstance(providerFactory), this),
         );
         return;
       }
@@ -38,7 +40,7 @@ export class SimpleDIContainer implements DIContainer {
         if (providerFactory.proxy === false) {
           providersMap.set(key, provider);
         } else {
-          providersMap.set(key, () => this.proxyFactory.createProxy(key, provider));
+          providersMap.set(key, () => this.proxyFactory(key, provider, this));
         }
         return;
       }
@@ -50,7 +52,7 @@ export class SimpleDIContainer implements DIContainer {
     return providersMap;
   }
 
-  private createInstance<T>(constructorFunction: ConstructorFunction<T>) {
+  createInstance<T>(constructorFunction: ConstructorFunction<T>) {
     const params: any[] = Reflect.getMetadata('design:paramtypes', constructorFunction);
     const args: any[] = [];
 
@@ -58,7 +60,8 @@ export class SimpleDIContainer implements DIContainer {
 
     params?.forEach((paramType, index) => {
       if (injectables && index in injectables) {
-        args.push(this.getInstance(injectables[index] || paramType));
+        const injectionToken = injectables[index] || paramType;
+        args.push(this.getInstance(injectionToken));
         return;
       }
       args.push(this.getInstance(paramType));
@@ -71,34 +74,40 @@ export class SimpleDIContainer implements DIContainer {
     return this.get<T>(constructorFunction);
   }
 
-  get<T>(key: any): T {
-    const existingInstance = this.registry.get(key);
+  get<T>(injectionToken: any): T {
+    const existingInstance = this.registry.get(injectionToken);
     if (existingInstance) {
       return existingInstance;
     }
 
-    const provider = this.providers.get(key);
+    if (injectionToken == CONTAINER) {
+      return this as any;
+    }
+
+    const provider = this.providers.get(injectionToken);
 
     const newInstance = provider && provider(); // this.createInstance(constructorFunction)
 
     if (!newInstance) {
       if (this.parent) {
-        return this.parent.getInstance(key);
+        return this.parent.getInstance(injectionToken);
       }
-      if (typeof key === 'function') {
-        throw new Error(`No provider for type ${key.name}`);
+      if (typeof injectionToken === 'function') {
+        throw new Error(`No provider for type ${injectionToken.name}`);
       }
-      throw new Error(`No provider for type ${key}`);
+      throw new Error(`No provider for type ${injectionToken}`);
     }
 
-    this.registry.set(key, newInstance);
+    this.registry.set(injectionToken, newInstance);
     return newInstance;
   }
 
-  setProxyFactory(proxyFactory: ProxyFactory & NonNullable<ProxyFactory>) {
-    if (!proxyFactory) {
-      throw new Error('Proxy factory cannot be set to null');
-    }
-    this.proxyFactory = proxyFactory;
+  clone() {
+    const container = new LazyDIContainer({
+      providers: [],
+      proxyFactory: this.proxyFactory
+    }, this.parent);
+    container.providers = this.providers;
+    return container;
   }
 }
