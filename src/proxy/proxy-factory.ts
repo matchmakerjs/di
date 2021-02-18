@@ -5,10 +5,9 @@ import { Provider } from '../provider/provider';
 //   createProxy<T>(constructor: ConstructorFunction<T>, provider: Provider<T>): T;
 // }
 
-export type ProxyFactory<T> = (constructor: ConstructorFunction<T>, provider: Provider<T>, container: DIContainer)=> T;
+export type ProxyFactory<T> = (constructor: ConstructorFunction<T>, provider: Provider<T>, container: DIContainer) => T;
 
 export function createProxy<T>(constructor: ConstructorFunction<T>, provider: Provider<T>): T {
-
   let target: T;
   const proxy = Object.create(constructor.prototype);
   // console.log(`Created proxy of ${constructor.name}`);

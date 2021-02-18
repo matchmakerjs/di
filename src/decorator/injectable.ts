@@ -1,6 +1,5 @@
 export function Injectable(): ClassDecorator {
-    return function Router(constructor: Function) {
-        Object.freeze(constructor);
-        Object.freeze(constructor.prototype);
-    }
+  return (constructor: any) => {
+    // future support for configs
+  };
 }

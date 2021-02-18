@@ -1,5 +1,5 @@
 {
-  "name": "di-node",
+  "name": "@olaleyeone/di-node",
   "version": "1.0.0",
   "description": "lightweight dependency injection container for node",
   "main": "dist/index.js",
