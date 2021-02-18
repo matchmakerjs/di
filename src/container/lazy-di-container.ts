@@ -29,8 +29,7 @@ export class LazyDIContainer implements DIContainer {
     providers?.forEach((providerFactory) => {
       if (typeof providerFactory === 'function') {
         const provider = this.createConstructorFromConstructor(providerFactory);
-        providersMap.set(providerFactory,
-          () => this.proxyFactory(providerFactory, provider, this));
+        providersMap.set(providerFactory, () => this.proxyFactory(providerFactory, provider, this));
         return;
       }
 
@@ -96,10 +95,10 @@ export class LazyDIContainer implements DIContainer {
     }
 
     const provider = this.providerRegistry.get(injectionToken);
-    const newInstance = provider && provider(); // this.createInstance(constructorFunction)
-    if (newInstance) {
-      this.instanceRegistry.set(injectionToken, newInstance);
-      return newInstance;
+    const providerInstance = provider && provider(); // this.createInstance(constructorFunction)
+    if (providerInstance) {
+      this.instanceRegistry.set(injectionToken, providerInstance);
+      return providerInstance;
     }
 
     if (this.parent) {
