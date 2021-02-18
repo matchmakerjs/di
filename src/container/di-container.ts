@@ -7,6 +7,4 @@ export interface DIContainer {
   getInstance<T>(constructorFunction: ConstructorFunction<T>): T;
 
   createInstance<T>(constructorFunction: ConstructorFunction<T>): T;
-
-  clone(): DIContainer;
 }

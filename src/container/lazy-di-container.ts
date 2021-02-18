@@ -7,16 +7,18 @@ import { CONTAINER, Inject } from '../decorator/inject';
 type InstanceFactory = ProviderFactory<any> | ConstructorFunction<any>;
 
 export class LazyDIContainer implements DIContainer {
-  private registry: Map<any, any> = new Map();
-  private providers: Map<any, Provider<any>>;
+  private instanceRegistry: Map<any, any> = new Map();
+  private providerRegistry: Map<any, Provider<any>>;
   private proxyFactory?: ProxyFactory<any>;
+  private providers: InstanceFactory[];
 
   constructor(conf: {
     providers: InstanceFactory[],
     proxyFactory?: ProxyFactory<any>
   }, private parent?: DIContainer) {
+    this.providers = conf.providers;
     this.proxyFactory = conf.proxyFactory || createProxy;
-    this.providers = this.toProviderMap(conf.providers);
+    this.providerRegistry = this.toProviderMap(conf.providers);
   }
 
   private toProviderMap(providers: InstanceFactory[]) {
@@ -75,7 +77,7 @@ export class LazyDIContainer implements DIContainer {
   }
 
   get<T>(injectionToken: any): T {
-    const existingInstance = this.registry.get(injectionToken);
+    const existingInstance = this.instanceRegistry.get(injectionToken);
     if (existingInstance) {
       return existingInstance;
     }
@@ -84,7 +86,7 @@ export class LazyDIContainer implements DIContainer {
       return this as any;
     }
 
-    const provider = this.providers.get(injectionToken);
+    const provider = this.providerRegistry.get(injectionToken);
 
     const newInstance = provider && provider(); // this.createInstance(constructorFunction)
 
@@ -98,16 +100,23 @@ export class LazyDIContainer implements DIContainer {
       throw new Error(`No provider for type ${injectionToken}`);
     }
 
-    this.registry.set(injectionToken, newInstance);
+    this.instanceRegistry.set(injectionToken, newInstance);
     return newInstance;
   }
 
-  clone() {
+  clone(providers: InstanceFactory[]) {
     const container = new LazyDIContainer({
-      providers: [],
+      providers: this.providers.concat(providers),
       proxyFactory: this.proxyFactory
     }, this.parent);
-    container.providers = this.providers;
+
+    // this.providers.forEach((val, key) => {
+    //   if (container.providers.has(key)) {
+    //     return;
+    //   }
+    //   container.providers.set(key, val);
+    // });
+
     return container;
   }
 }

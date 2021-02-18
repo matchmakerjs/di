@@ -3,7 +3,8 @@ import 'reflect-metadata';
 const metadataKey = Symbol('inject');
 Inject.metadataKey = metadataKey;
 
-export const CONTAINER = Symbol('CONTAINER');
+export const CONTAINER = Symbol('container');
+Inject.container = CONTAINER;
 
 export function Inject(key: any) {
   return (target: object, propertyKey: string | symbol, parameterIndex: number) => {
