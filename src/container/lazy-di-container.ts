@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Inject } from '../decorator/inject';
+import { InjectionToken } from '../decorator/inject';
 import { InstanceFactory, Provider } from '../provider/provider';
 import { createProxy, ProxyFactory } from '../proxy/proxy-factory';
 import { ConstructorFunction, DIContainer } from './di-container';
@@ -64,7 +64,7 @@ export class LazyDIContainer implements DIContainer {
     const params: any[] = Reflect.getMetadata('design:paramtypes', constructorFunction);
     const args: any[] = [];
 
-    const injectables: { [key: number]: any } = Reflect.getMetadata(Inject.metadataKey, constructorFunction);
+    const injectables: { [key: number]: any } = Reflect.getMetadata(InjectionToken.metadataKey, constructorFunction);
 
     params?.forEach((paramType, index) => {
       if (injectables && index in injectables) {
@@ -88,7 +88,7 @@ export class LazyDIContainer implements DIContainer {
       return existingInstance;
     }
 
-    if (injectionToken === Inject.container) {
+    if (injectionToken === InjectionToken.container) {
       return this as any;
     }
 

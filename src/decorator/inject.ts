@@ -1,10 +1,12 @@
 import 'reflect-metadata';
 
 const metadataKey = Symbol('inject');
-Inject.metadataKey = metadataKey;
-
 const containerKey = Symbol('container');
-Inject.container = containerKey;
+
+export const InjectionToken = {
+  container: containerKey,
+  metadataKey: metadataKey
+}
 
 export function Inject(key: any) {
   return (target: object, propertyKey: string | symbol, parameterIndex: number) => {
