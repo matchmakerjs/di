@@ -4,6 +4,10 @@ import { InstanceFactory, Provider } from '../provider/provider';
 import { createProxy, ProxyFactory } from '../proxy/proxy-factory';
 import { ConstructorFunction, DIContainer } from './di-container';
 
+function isInjectable(providerFactory: ConstructorFunction<any>) {
+  return Reflect.getMetadata('design:paramtypes', providerFactory) === undefined;
+}
+
 export class LazyDIContainer implements DIContainer {
   private instanceRegistry: Map<any, any> = new Map();
   private providerRegistry: Map<any, Provider<any>>;
@@ -54,7 +58,7 @@ export class LazyDIContainer implements DIContainer {
     if (!providerFactory.prototype) {
       throw new Error(`${providerFactory.name} is not a class`);
     }
-    if (Reflect.getMetadata('design:paramtypes', providerFactory) === undefined) {
+    if (!isInjectable(providerFactory)) {
       throw new Error(`Decorate class ${providerFactory.name} with @Injectable()`);
     }
     return () => this.createInstance(providerFactory);
@@ -104,7 +108,7 @@ export class LazyDIContainer implements DIContainer {
     }
     if (typeof injectionToken === 'function') {
       if (injectionToken.prototype) {
-        if (Reflect.getMetadata('design:paramtypes', injectionToken) === undefined) {
+        if (!isInjectable(injectionToken)) {
           throw new Error(`Decorate class ${injectionToken.name} with @Injectable()`);
         }
         const newInstance = this.proxyFactory(injectionToken, () => this.createInstance(injectionToken), this);
