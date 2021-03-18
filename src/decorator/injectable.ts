@@ -10,6 +10,6 @@ export function Injectable(): ClassDecorator {
   };
 }
 
-function isInjectable(type: any) {
-  return Reflect.getMetadata('design:paramtypes', type) === undefined;
+export function isInjectable(type: any) {
+  return Reflect.getMetadata('design:paramtypes', type) !== undefined;
 }

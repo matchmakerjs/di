@@ -3,5 +3,5 @@ export * from './container/lazy-di-container';
 export { ProxyFactory } from './proxy/proxy-factory';
 export * from './provider/provider';
 export * from './provider/scoped-provider';
-export * from './decorator/inject';
+export { Inject, InjectionToken } from './decorator/inject';
 export * from './decorator/injectable';

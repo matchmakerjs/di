@@ -1,11 +1,11 @@
 import 'reflect-metadata';
+import { ConstructorFunction } from '../container/di-container';
 
 const metadataKey = Symbol('inject');
 const containerKey = Symbol('container');
 
 export const InjectionToken = {
   container: containerKey,
-  metadataKey: metadataKey
 }
 
 export function Inject(key: any) {
@@ -23,4 +23,8 @@ export function Inject(key: any) {
 
     Reflect.defineMetadata(metadataKey, constructorParameters, target.constructor, propertyKey);
   };
+}
+
+export function getInjectables(constructorFunction: ConstructorFunction<any>): { [key: number]: any } {
+  return Reflect.getMetadata(metadataKey, constructorFunction);
 }
