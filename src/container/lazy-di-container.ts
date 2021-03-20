@@ -40,21 +40,29 @@ export class LazyDIContainer implements DIContainer {
 
       if (!providerFactory.with) {
         if (typeof key === 'function' && isInjectable(key)) {
-          provider = this.createProviderFromConstructor(key);
+          const constructorProvider = this.createProviderFromConstructor(key);
+          provider = constructorProvider;
+          if (providerFactory.proxy !== false) {
+            provider = () => this.proxyFactory(key, constructorProvider, this);
+          }
         } else {
           throw new Error(`Provider function missing in factory of ${providerFactory.provide}`);
         }
       } else if (isInjectable(providerFactory.with as any)) {
-        provider = this.createProviderFromConstructor(providerFactory.with as any);
+        const constructorProvider = this.createProviderFromConstructor(providerFactory.with as any);
+        provider = constructorProvider;
+        if (providerFactory.proxy !== false) {
+          provider = () => this.proxyFactory(providerFactory.with as any, constructorProvider, this);
+        }
       } else {
         provider = providerFactory.with as Provider<any>;
       }
 
-      if (providerFactory.proxy === false) {
-        providersMap.set(key, provider);
-      } else {
-        providersMap.set(key, () => this.proxyFactory(key, provider, this));
+      if (typeof provider !== 'function') {
+        throw new Error(`Provider of ${key} is not a function: ${providerFactory}`);
       }
+      providersMap.set(key, provider);
+
       if (typeof providerFactory.singleton === 'boolean' ? !providerFactory.singleton : false) {
         this.doNotCache.add(key);
       }
@@ -63,16 +71,14 @@ export class LazyDIContainer implements DIContainer {
   }
 
   private createProviderFromConstructor(providerFactory: ConstructorFunction<any>) {
-    if (!providerFactory.prototype) {
-      throw new Error(`${providerFactory.name} is not a class`);
-    }
-    if (!isInjectable(providerFactory)) {
+    if (typeof providerFactory !== 'function' || !isInjectable(providerFactory)) {
       throw new Error(`Decorate class ${providerFactory.name} with @Injectable()`);
     }
     return () => this.createInstance(providerFactory);
   }
 
   createInstance<T>(constructorFunction: ConstructorFunction<T>) {
+
     const params: any[] = Reflect.getMetadata('design:paramtypes', constructorFunction);
     const args: any[] = [];
 
@@ -105,10 +111,15 @@ export class LazyDIContainer implements DIContainer {
     }
 
     const provider = this.providerRegistry.get(injectionToken);
-    const providerInstance = provider && provider(); // this.createInstance(constructorFunction)
-    if (providerInstance) {
-      this.instanceRegistry.set(injectionToken, providerInstance);
-      return providerInstance;
+    if (provider) {
+      const instance = provider(); // this.createInstance(constructorFunction)
+      if (instance === null || instance === undefined) {
+        throw new Error('Provider of ' + injectionToken + ' returned ' + instance);
+      }
+      if (!this.doNotCache.has(injectionToken)) {
+        this.instanceRegistry.set(injectionToken, instance);
+      }
+      return instance;
     }
 
     if (this.parent) {
@@ -116,17 +127,14 @@ export class LazyDIContainer implements DIContainer {
     }
 
     if (typeof injectionToken === 'function') {
-      if (injectionToken.prototype) {
-        if (!isInjectable(injectionToken)) {
-          throw new Error(`Decorate class ${injectionToken.name} with @Injectable()`);
-        }
-        const newInstance = this.proxyFactory(injectionToken, () => this.createInstance(injectionToken), this);
-        if (this.doNotCache.has(injectionToken)) {
-          this.instanceRegistry.set(injectionToken, newInstance);
-        }
-        return newInstance;
+      if (!isInjectable(injectionToken)) {
+        throw new Error(`Decorate class ${injectionToken.name} with @Injectable()`);
       }
-      throw new Error(`No provider for type ${injectionToken.name}`);
+      const newInstance = this.proxyFactory(injectionToken, () => this.createInstance(injectionToken), this);
+      if (!this.doNotCache.has(injectionToken)) {
+        this.instanceRegistry.set(injectionToken, newInstance);
+      }
+      return newInstance;
     }
     throw new Error(`No provider for type ${injectionToken}`);
   }
