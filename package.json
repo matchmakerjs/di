@@ -1,5 +1,5 @@
 {
-  "name": "@olaleyeone/node-di",
+  "name": "@matchmakerjs/di",
   "version": "0.0.1",
   "description": "lightweight dependency injection container for node",
   "main": "dist/index.js",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/olaleyeone/node-di.git"
+    "url": "git+https://github.com/matchmakerjs/di.git"
   },
   "keywords": [
     "dependency",
@@ -23,20 +23,21 @@
   "author": "Olaleye Afolabi",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/olaleyeone/node-di/issues"
+    "url": "https://github.com/matchmakerjs/di/issues"
   },
-  "homepage": "https://github.com/olaleyeone/node-di#readme",
+  "homepage": "https://github.com/matchmakerjs/di#readme",
   "devDependencies": {
     "@types/node": "^14.14.28",
     "nodemon": "^2.0.7",
     "prettier": "^2.2.1",
+    "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "ts-node": "^9.1.1",
     "tslint": "^6.1.3",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^4.1.5"
   },
-  "dependencies": {
+  "peerDependencies": {
     "reflect-metadata": "^0.1.13"
   }
 }

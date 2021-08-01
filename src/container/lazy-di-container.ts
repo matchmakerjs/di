@@ -136,7 +136,7 @@ export class LazyDIContainer implements DIContainer {
       }
       return newInstance;
     }
-    throw new Error(`No provider for type ${injectionToken}`);
+    throw new Error(`No provider for type ${injectionToken.toString()}`);
   }
 
   clone(providers: InstanceFactory[]) {
