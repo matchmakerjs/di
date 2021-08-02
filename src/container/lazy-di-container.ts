@@ -59,7 +59,7 @@ export class LazyDIContainer implements DIContainer {
       }
 
       if (typeof provider !== 'function') {
-        throw new Error(`Provider of ${key} is not a function: ${providerFactory}`);
+        throw new Error(`Provider of ${key.toString()} is not a function: ${providerFactory}`);
       }
       providersMap.set(key, provider);
 
@@ -114,7 +114,7 @@ export class LazyDIContainer implements DIContainer {
     if (provider) {
       const instance = provider(); // this.createInstance(constructorFunction)
       if (instance === null || instance === undefined) {
-        throw new Error('Provider of ' + injectionToken + ' returned ' + instance);
+        throw new Error('Provider of ' + injectionToken.toString() + ' returned ' + instance);
       }
       if (!this.doNotCache.has(injectionToken)) {
         this.instanceRegistry.set(injectionToken, instance);
