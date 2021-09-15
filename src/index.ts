@@ -1,7 +1,10 @@
 export * from './container/di-container';
+export * from './container/factory/container-factory';
+export * from './container/factory/container-module';
+export * from './container/factory/health-checker';
 export * from './container/lazy-di-container';
-export { ProxyFactory } from './proxy/proxy-factory';
-export * from './provider/provider';
-export * from './provider/scoped-provider';
 export { Inject, InjectionToken } from './decorator/inject';
 export * from './decorator/injectable';
+export * from './provider/provider';
+export * from './provider/scoped-provider';
+export { ProxyFactory } from './proxy/proxy-factory';
