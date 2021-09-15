@@ -28,7 +28,7 @@ export function createContainer(conf: {
             return;
         }
         await Promise.allSettled(modules
-            .filter(module => module.dispose)
-            .map(module => module.dispose()));
+            .filter(module => module.cleanUp)
+            .map(module => module.cleanUp()));
     }];
 }

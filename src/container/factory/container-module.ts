@@ -3,5 +3,5 @@ import { HealthChecker } from "./health-checker";
 
 export type DIContainerModule = {
     providers: InstanceFactory[],
-    dispose?: () => Promise<void>
+    cleanUp?: () => Promise<void>
 } & HealthChecker;
