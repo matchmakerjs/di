@@ -1,6 +1,6 @@
-import { ConstructorFunction } from "../container/di-container";
+import { ConstructorFunction, DIContainer } from "../container/di-container";
 
-export type Provider<E> = E extends Promise<any> ? never : () => E;
+export type Provider<E> = E extends Promise<any> ? never : (container: DIContainer) => E;
 
 export type ProviderFactory<T> = {
   provide: any;

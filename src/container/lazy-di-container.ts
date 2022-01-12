@@ -112,7 +112,7 @@ export class LazyDIContainer implements DIContainer {
 
     const provider = this.providerRegistry.get(injectionToken);
     if (provider) {
-      const instance = provider(); // this.createInstance(constructorFunction)
+      const instance = provider(this); // this.createInstance(constructorFunction)
       if (instance === null || instance === undefined) {
         throw new Error('Provider of ' + injectionToken.toString() + ' returned ' + instance);
       }
