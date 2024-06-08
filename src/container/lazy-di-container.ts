@@ -30,8 +30,8 @@ export class LazyDIContainer implements DIContainer {
     providers?.forEach((providerFactory) => {
 
       if (typeof providerFactory === 'function') {
-        const provider = this.createProviderFromConstructor(providerFactory);
-        providersMap.set(providerFactory, () => this.proxyFactory(providerFactory, provider, this));
+        const providerFromConstructor = this.createProviderFromConstructor(providerFactory);
+        providersMap.set(providerFactory, () => this.proxyFactory(providerFactory, providerFromConstructor, this));
         return;
       }
 

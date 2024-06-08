@@ -11,22 +11,22 @@ export function createContainer(conf: {
     const container = new LazyDIContainer({
         proxyFactory: conf?.proxyFactory,
         providers: [
-            ...modules.flatMap(module => module.providers),
             {
                 provide: HealthChecker,
                 with: () => ({
                     isHealthy: () => Promise.all(modules
                         .filter(module => module.isHealthy)
-                        .map(module => module.isHealthy()))
+                        .map(module => module.isHealthy().catch(e => {
+                            console.error(e);
+                            return false;
+                        })))
                         .then(results => results.findIndex((entry) => !entry) < 0)
                 } as HealthChecker)
-            }
+            },
+            ...modules.flatMap(module => module.providers),
         ]
     });
     return [container, async () => {
-        if (!modules) {
-            return;
-        }
         await Promise.allSettled(modules
             .filter(module => module.cleanUp)
             .map(module => module.cleanUp()));
